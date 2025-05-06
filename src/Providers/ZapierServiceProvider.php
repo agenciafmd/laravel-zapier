@@ -6,18 +6,18 @@ use Illuminate\Support\ServiceProvider;
 
 class ZapierServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
-        // 
+        //
     }
 
-    public function register()
+    public function register(): void
     {
-        $this->loadConfigs();
+        $this->registerConfigs();
     }
 
-    protected function loadConfigs()
+    private function registerConfigs(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/laravel-zapier.php', 'laravel-zapier');
+        $this->mergeConfigFrom(__DIR__ . '/../../config/laravel-zapier.php', 'laravel-zapier');
     }
 }

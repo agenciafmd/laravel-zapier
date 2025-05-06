@@ -11,7 +11,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Cookie;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 
@@ -19,17 +18,17 @@ class SendConversionsToZapierWebhook implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $data;
+    protected array $data;
 
     public function __construct(array $data = [])
     {
         $this->data = $data;
     }
 
-    public function handle()
+    public function handle(): void
     {
         if (!config('laravel-zapier.webhook')) {
-            return false;
+            return;
         }
 
         $client = $this->getClientRequest();
@@ -41,7 +40,7 @@ class SendConversionsToZapierWebhook implements ShouldQueue
         ]);
     }
 
-    private function getClientRequest()
+    private function getClientRequest(): Client
     {
         $logger = new Logger('Zapier');
         $logger->pushHandler(new StreamHandler(storage_path('logs/zapier-' . date('Y-m-d') . '.log')));
@@ -50,7 +49,7 @@ class SendConversionsToZapierWebhook implements ShouldQueue
         $stack->push(
             Middleware::log(
                 $logger,
-                new MessageFormatter("{method} {uri} HTTP/{version} {req_body} | RESPONSE: {code} - {res_body}")
+                new MessageFormatter('{method} {uri} HTTP/{version} {req_body} | RESPONSE: {code} - {res_body}')
             )
         );
 
