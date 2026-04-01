@@ -1,0 +1,1 @@
+{"version":2,"defects":[],"times":{"Agenciafmd\\Zapier\\Tests\\SendConversionsToZapierWebhookTest::test_it_sends_data_to_zapier_webhook":0.047,"Agenciafmd\\Zapier\\Tests\\SendConversionsToZapierWebhookTest::test_it_does_not_send_when_webhook_is_empty":0.001,"Agenciafmd\\Zapier\\Tests\\SendConversionsToZapierWebhookTest::test_it_logs_the_response":0.004}}

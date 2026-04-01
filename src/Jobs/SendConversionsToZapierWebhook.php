@@ -2,17 +2,13 @@
 
 namespace Agenciafmd\Zapier\Jobs;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\MessageFormatter;
-use GuzzleHttp\Middleware;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SendConversionsToZapierWebhook implements ShouldQueue
 {
@@ -31,34 +27,16 @@ class SendConversionsToZapierWebhook implements ShouldQueue
             return;
         }
 
-        $client = $this->getClientRequest();
+        $response = Http::timeout(60)
+            ->connectTimeout(60)
+            ->withoutVerifying()
+            ->asForm()
+            ->post(config('laravel-zapier.webhook'), $this->data);
 
-        $formParams = $this->data;
-
-        $client->request('POST', config('laravel-zapier.webhook'), [
-            'form_params' => $formParams,
-        ]);
-    }
-
-    private function getClientRequest(): Client
-    {
-        $logger = new Logger('Zapier');
-        $logger->pushHandler(new StreamHandler(storage_path('logs/zapier-' . date('Y-m-d') . '.log')));
-
-        $stack = HandlerStack::create();
-        $stack->push(
-            Middleware::log(
-                $logger,
-                new MessageFormatter('{method} {uri} HTTP/{version} {req_body} | RESPONSE: {code} - {res_body}')
-            )
-        );
-
-        return new Client([
-            'timeout' => 60,
-            'connect_timeout' => 60,
-            'http_errors' => false,
-            'verify' => false,
-            'handler' => $stack,
+        Log::channel('zapier')->info('Zapier webhook', [
+            'status' => $response->status(),
+            'body' => $response->body(),
+            'data' => $this->data,
         ]);
     }
 }
